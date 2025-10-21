@@ -19,7 +19,7 @@ function App() {
       
       <div className="app-header-container">
         <h1 className="app-header">
-          TNGSS Contact Manager
+          Adi's Contact Manager
         </h1>
         <ExportButton /> 
       </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../firebase.js'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import './contactForm.css'; // Import the form CSS
+import './ContactForm.css'; // Import the form CSS
 
 const ContactForm = ({ onContactAdded }) => {
     const initialState = {

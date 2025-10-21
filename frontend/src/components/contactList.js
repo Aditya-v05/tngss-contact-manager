@@ -6,7 +6,7 @@ import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from '
 import EditModal from './EditModal';
 import ViewModal from './ViewModal';
 import EmailModal from './EmailModal'; // Import the new EmailModal
-import './ContactList.css'; 
+import './contactList.css'; 
 
 // Receive userEmail as a prop
 const ContactList = ({ refreshKey, userEmail }) => {

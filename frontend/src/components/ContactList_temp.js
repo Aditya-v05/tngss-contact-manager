@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase.js'; 
 import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore'; 
-import EditModal from './EditModal';
-import ViewModal from './ViewModal';
-import EmailModal from './EmailModal'; // Import the new EmailModal
+import EditModal from './EditModal.js';
+import ViewModal from './ViewModal.js';
+import EmailModal from './EmailModal.js'; // Import the new EmailModal
 import './ContactList.css'; 
 
 // Receive userEmail as a prop

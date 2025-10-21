@@ -1,12 +1,62 @@
-/* ... all your other existing styles ... */
+/* frontend/src/components/ContactList.css */
 
-/* ADD: Make cards clickable */
+.contact-list-container {
+  padding: 20px;
+  background-color: #111;
+  border: 4px solid #00FFFF; /* Cyan */
+}
+
+.loading-text {
+  text-align: center;
+  padding: 20px;
+  color: #00FF00; /* Green */
+}
+
+.list-title {
+  border-bottom: 2px solid #AAA;
+  padding-bottom: 10px;
+  color: #FFFFFF;
+}
+
+.list-subtitle {
+  color: #FFFF00; /* Yellow */
+  margin-top: 30px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap; /* Allow wrapping on small screens */
+}
+
+.search-input {
+  flex-grow: 1; /* Take up remaining space */
+}
+
+.filter-select {
+  flex-basis: 200px;
+}
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 15px;
+}
+
 .contact-card {
   border: 4px solid #444;
   padding: 15px;
   background-color: #000000;
   cursor: pointer; /* Show it's clickable */
   transition: all 0.2s;
+}
+
+/* Style card border if follow-up is true */
+.contact-card[data-follow-up="true"] {
+  border-color: #FF0000; /* Red border */
+  box-shadow: 0 0 10px #FF0000; /* Red glow */
 }
 
 .contact-card:hover,
@@ -16,7 +66,67 @@
   outline: none; /* Remove focus ring, we use border */
 }
 
-/* ADD: Style for the initial empty state */
+.card-name {
+  margin: 0 0 5px 0;
+  color: #00FFFF; /* Cyan */
+  font-size: 1.1em;
+}
+
+.card-company {
+  margin: 0 0 8px 0;
+  font-size: 1em;
+  font-weight: bold;
+  color: #FFFFFF;
+}
+
+.card-detail {
+  margin: 0 0 5px 0;
+  font-size: 0.8em;
+}
+.card-detail strong {
+  color: #AAA;
+}
+
+.card-contact {
+  margin: 0 0 5px 0;
+  font-size: 0.8em;
+  color: #00FF00; /* Green */
+}
+.card-contact a {
+  color: #00FF00;
+  text-decoration: none;
+}
+.card-contact a:hover {
+  text-decoration: underline;
+}
+
+
+.card-notes {
+  margin: 10px 0;
+  font-style: italic;
+  border-left: 3px solid #63B3ED;
+  padding-left: 8px;
+  font-size: 0.9em;
+  color: #DDD;
+}
+
+.follow-up-tag {
+  font-weight: bold;
+  padding: 4px 8px;
+  font-size: 0.8em;
+}
+
+.follow-up-yes {
+  color: #000000;
+  background-color: #FF0000; /* Red */
+}
+
+.follow-up-no {
+  color: #000;
+  background-color: #00FF00; /* Green */
+}
+
+/* Style for the initial empty state */
 .prompt-text {
   color: #888;
   font-size: 1.1em;
@@ -25,5 +135,3 @@
   grid-column: 1 / -1; /* Make it span the whole grid */
   padding: 40px;
 }
-
-/* ADD: Style for disabled export button */

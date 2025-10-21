@@ -1,0 +1,121 @@
+/* Re-using modal backdrop from EditModal */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  font-family: 'Press Start 2P', cursive;
+}
+
+.view-modal-content {
+  width: 90%;
+  max-width: 600px;
+  background-color: #111;
+  border: 4px solid #FFFF00; /* Yellow border */
+  color: #FFFFFF;
+}
+
+.view-modal-header {
+  padding: 20px;
+  background-color: #222;
+  border-bottom: 2px solid #FFFF00;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Re-use card-name style */
+.view-modal-header .card-name {
+  color: #FFFF00; /* Yellow */
+  margin: 0;
+}
+
+/* Re-use follow-up tag style */
+.view-modal-header .follow-up-tag {
+  font-weight: bold;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  color: #000;
+  background-color: #FF0000; /* Red */
+}
+
+
+.view-modal-body {
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* Re-using card styles for consistency */
+.view-modal-body .card-company {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-top: 0;
+}
+.view-modal-body .card-detail {
+  font-size: 0.9em;
+}
+.view-modal-body .card-contact {
+  color: #00FF00;
+  font-size: 0.9em;
+}
+.view-modal-body .card-contact a {
+  color: #00FF00;
+}
+.view-modal-body .card-notes {
+  margin-top: 15px;
+  padding-left: 10px;
+  border-left: 3px solid #00FFFF; /* Cyan */
+  font-style: italic;
+  font-size: 0.9em;
+  color: #DDD;
+}
+
+
+.view-modal-footer {
+  padding: 15px 20px;
+  border-top: 2px dashed #888;
+  display: flex;
+  justify-content: flex-end; /* Align buttons to the right */
+  gap: 10px;
+}
+
+/* Re-using button styles */
+.view-modal-footer .edit-button,
+.view-modal-footer .delete-button,
+.view-modal-footer .cancel-button {
+  padding: 10px 15px;
+  border: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+}
+
+.view-modal-footer .cancel-button {
+  background-color: #888;
+  color: #FFFFFF;
+}
+.view-modal-footer .cancel-button:hover {
+  background-color: #AAA;
+}
+
+/* Ensure Edit/Delete styles are defined if they weren't in ContactList.css */
+.edit-button {
+  background-color: #00FFFF; /* Cyan */
+  color: #000;
+}
+.edit-button:hover {
+  background-color: #FFFFFF;
+}
+
+.delete-button {
+  background-color: #FF0000; /* Red */
+  color: #000;
+}
+.delete-button:hover {
+  background-color: #FF8888;
+}

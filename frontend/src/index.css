@@ -1,0 +1,37 @@
+/* src/index.css */
+
+/* Import the 8-bit font */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+body {
+  margin: 0;
+  padding: 0;
+  
+  /* 8-bit global styles */
+  font-family: 'Press Start 2P', cursive;
+  background-color: #000000; /* Black background */
+  color: #FFFFFF; /* White text */
+  
+  /* Helps font render crisply */
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  image-rendering: pixelated;
+}
+
+/* Default for all form elements */
+input, select, textarea, button {
+  font-family: 'Press Start 2P', cursive;
+  border-radius: 0; /* No rounded corners */
+  border: 2px solid #FFFFFF;
+  background-color: #111;
+  color: #FFFFFF;
+  padding: 10px;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #888;
+}
+
+button {
+  cursor: pointer;
+}

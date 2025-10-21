@@ -1,0 +1,35 @@
+/* src/App.css */
+.app-container {
+  font-family: 'Press Start 2P', cursive;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Modify this existing class */
+.app-header {
+  text-align: left; /* Was 'center' */
+  color: #FFFF00; /* Bright Yellow */
+  text-shadow: 2px 2px #FF00FF; /* Magenta shadow */
+  margin: 0; /* Was '... 30px' */
+  padding: 0; /* Was '10px' */
+  border: none; /* Was 'border-bottom: ...' */
+}
+
+.app-divider {
+  margin: 40px 0;
+  border: 0;
+  border-top: 4px dashed #FF00FF; /* Magenta dash */
+}
+
+/* ... keep existing styles ... */
+
+.app-header-container {
+  display: flex;
+  flex-direction: row; /* Horizontal layout */
+  justify-content: space-between; /* Pushes title and button apart */
+  align-items: center; /* Vertically center them */
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 4px solid #00FFFF; /* Bright Cyan */
+}

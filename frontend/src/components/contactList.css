@@ -1,0 +1,29 @@
+/* ... all your other existing styles ... */
+
+/* ADD: Make cards clickable */
+.contact-card {
+  border: 4px solid #444;
+  padding: 15px;
+  background-color: #000000;
+  cursor: pointer; /* Show it's clickable */
+  transition: all 0.2s;
+}
+
+.contact-card:hover,
+.contact-card:focus {
+  background-color: #1a1a1a;
+  border-color: #FFFF00; /* Yellow */
+  outline: none; /* Remove focus ring, we use border */
+}
+
+/* ADD: Style for the initial empty state */
+.prompt-text {
+  color: #888;
+  font-size: 1.1em;
+  text-align: center;
+  width: 100%;
+  grid-column: 1 / -1; /* Make it span the whole grid */
+  padding: 40px;
+}
+
+/* ADD: Style for disabled export button */

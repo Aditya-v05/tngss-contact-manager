@@ -4,7 +4,7 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import ContactForm from './components/contactForm';
 import ContactList from './components/contactList';
 import ExportButton from './components/ExportButton';
-import Chatbot from './components/Chatbot'; // --- NEW ---
+import Chatbot from './components/ChatBot'; // --- NEW ---
 import './App.css'; 
 
 function App() {

@@ -1,43 +1,38 @@
+// frontend/api/sendEmail.js
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
 
-  // Get the secret keys from Vercel
-  const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
-  
-  // This is your STATIC, VERIFIED email (e.g., you@gmail.com)
-  const VERIFIED_SENDER = process.env.SENDGRID_FROM_EMAIL; 
+  // 1. Get the Resend API key from Vercel
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
-  // Get data from the React app
-  // 'fromEmail' here is the DYNAMIC logged-in user (e.g., user@google.com)
-  const { fromEmail, toEmail, subject, body } = req.body;
-
-  if (!SENDGRID_API_KEY || !VERIFIED_SENDER) {
+  if (!RESEND_API_KEY) {
     return res.status(500).json({ error: 'Email service is not configured.' });
   }
 
-  // Format the email for SendGrid
+  // 2. Get data from the React app
+  // 'fromEmail' is the logged-in user (e.g., user@google.com)
+  // 'toEmail' is the contact
+  const { fromEmail, toEmail, subject, body } = req.body;
+
+  // 3. Format the email for Resend's API
+  //    Resend is simpler!
   const emailData = {
-    personalizations: [{ to: [{ email: toEmail }] }],
-    
-    // FROM: This MUST be your static, verified email
-    from: { email: VERIFIED_SENDER, name: "TNGSS Contact Manager" }, 
-    
-    // REPLY-TO: This is the user who is logged in
-    // When the contact hits "reply", it will go to this user.
-    reply_to: { email: fromEmail }, 
-    
+    from: 'TNGSS Contact Manager <onboarding@resend.dev>', // This is required by Resend's free plan
+    to: [toEmail],
     subject: subject,
-    content: [{ type: 'text/plain', value: body }],
+    text: body,
+    reply_to: fromEmail, // This is the magic: when they reply, it goes to your user
   };
 
-  // Send the email
+  // 4. Send the email by calling Resend's API
   try {
-    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${SENDGRID_API_KEY}`,
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(emailData),
@@ -45,11 +40,13 @@ export default async function handler(req, res) {
 
     if (!response.ok) {
       const errorBody = await response.json();
-      console.error("SendGrid error:", errorBody);
-      return res.status(response.status).json({ error: 'Failed to send email. Check SendGrid setup.' });
+      console.error("Resend error:", errorBody);
+      return res.status(response.status).json({ error: 'Failed to send email.' });
     }
 
-    res.status(200).json({ message: 'Email sent successfully!' });
+    // Resend gives back the new email ID
+    const data = await response.json();
+    res.status(200).json({ message: 'Email sent successfully!', id: data.id });
 
   } catch (error) {
     console.error("Email function error:", error);

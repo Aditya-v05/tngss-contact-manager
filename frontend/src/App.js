@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import ContactForm from './components/contactForm';
 import ContactList from './components/contactList';
 import ExportButton from './components/ExportButton';
+import Login from './components/Login'; // Import Login
 import './firebase.js'; 
 import './App.css'; 
 
 function App() {
-  // We are only keeping refreshKey state here
   const [refreshKey, setRefreshKey] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null); // Keep track of user
 
-  // This stays the same
   const handleContactAdded = () => {
     setRefreshKey(prevKey => prevKey + 1);
   };
@@ -23,17 +23,16 @@ function App() {
         </h1>
         <ExportButton /> 
       </div>
+      
+      {/* Add the Login component */}
+      <Login onUserChange={setCurrentUser} /> 
 
       <ContactForm onContactAdded={handleContactAdded} />
       
       <hr className="app-divider" />
       
-      {/* --- REVERTED --- */}
-      {/* Pass refreshKey down, not contacts or loading */}
-      <ContactList refreshKey={refreshKey} />
-      
-      {/* --- REMOVED --- */}
-      {/* <Chatbot allContacts={contacts} /> was here */}
+      {/* We can now pass the user's email to the list */}
+      <ContactList refreshKey={refreshKey} userEmail={currentUser?.email} />
     </div>
   );
 }

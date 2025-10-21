@@ -1,0 +1,22 @@
+.email-meta {
+  padding: 10px;
+  background-color: #222;
+  border: 2px solid #444;
+  margin-bottom: 15px;
+}
+.email-meta p {
+  margin: 5px 0;
+  font-size: 0.8em;
+  color: #DDD;
+}
+.email-meta strong {
+  color: #FFFF00;
+}
+.email-status-error {
+  color: #FF0000;
+  font-size: 0.8em;
+}
+.email-status-success {
+  color: #00FF00;
+  font-size: 0.8em;
+}

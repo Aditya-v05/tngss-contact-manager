@@ -1,23 +1,25 @@
+// frontend/src/components/ContactList.js
+
 import React, { useState, useEffect } from 'react';
 import { db } from '../firebase.js'; 
-// --- RE-ADD getDocs, collection, query, orderBy ---
 import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore'; 
 import EditModal from './EditModal';
 import ViewModal from './ViewModal';
-import './contactList.css'; 
+import EmailModal from './EmailModal'; // Import the new EmailModal
+import './ContactList.css'; 
 
-// --- REVERTED: Receive refreshKey as a prop ---
-const ContactList = ({ refreshKey }) => {
-    // --- RE-ADD STATE: State is now managed inside this component ---
+// Receive userEmail as a prop
+const ContactList = ({ refreshKey, userEmail }) => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
-
     const [searchTerm, setSearchTerm] = useState('');
     const [filterIndustry, setFilterIndustry] = useState('');
     const [editingContact, setEditingContact] = useState(null);
     const [viewingContact, setViewingContact] = useState(null);
 
-    // --- RE-ADD: fetchContacts function ---
+    // State to control the email modal
+    const [isEmailing, setIsEmailing] = useState(false);
+
     const fetchContacts = async () => {
         setLoading(true);
         try {
@@ -38,10 +40,10 @@ const ContactList = ({ refreshKey }) => {
         }
     };
 
-    // --- RE-ADD: useEffect to fetch data on load and refreshKey change ---
+    // Fetch data on load and whenever a new contact is added (via refreshKey)
     useEffect(() => {
         fetchContacts();
-    }, [refreshKey]); // This component now fetches its own data
+    }, [refreshKey]); 
 
     const uniqueIndustries = [...new Set(contacts.map(c => c.industry).filter(Boolean).sort())];
 
@@ -63,7 +65,7 @@ const ContactList = ({ refreshKey }) => {
         if (window.confirm(`Are you sure you want to delete ${contactName}?`)) {
             try {
                 await deleteDoc(doc(db, 'contacts', contactId));
-                fetchContacts(); // --- REVERTED: Call fetchContacts directly
+                fetchContacts(); // Refetch after delete
                 alert('Contact deleted successfully!');
             } catch (error) {
                 console.error("Error deleting document: ", error);
@@ -76,7 +78,7 @@ const ContactList = ({ refreshKey }) => {
         const { id, ...dataToUpdate } = updatedContact; 
         try {
             await updateDoc(doc(db, 'contacts', id), dataToUpdate);
-            fetchContacts(); // --- REVERTED: Call fetchContacts directly
+            fetchContacts(); // Refetch after update
             setEditingContact(null);
             alert('Contact updated successfully!');
         } catch (error) {
@@ -89,6 +91,7 @@ const ContactList = ({ refreshKey }) => {
 
     return (
         <div className="contact-list-container">
+            {/* Edit Modal (unchanged) */}
             {editingContact && (
                 <EditModal 
                     contact={editingContact}
@@ -97,9 +100,11 @@ const ContactList = ({ refreshKey }) => {
                 />
             )}
             
+            {/* View Modal (updated) */}
             {viewingContact && (
                 <ViewModal
                     contact={viewingContact}
+                    userEmail={userEmail} // Pass the user's email down
                     onClose={() => setViewingContact(null)}
                     onEdit={() => {
                         setEditingContact(viewingContact);
@@ -109,6 +114,21 @@ const ContactList = ({ refreshKey }) => {
                         handleDelete(viewingContact.id, viewingContact.name);
                         setViewingContact(null);
                     }}
+                    // Prop to open email modal
+                    onEmail={() => {
+                        setIsEmailing(true); // Open email modal
+                        // We keep the view modal open underneath
+                    }}
+                />
+            )}
+
+            {/* NEW: Email Modal */}
+            {isEmailing && viewingContact && (
+                <EmailModal
+                  show={isEmailing}
+                  contact={viewingContact} // Pass the contact being emailed
+                  fromEmail={userEmail}   // Pass the logged-in user's email
+                  onClose={() => setIsEmailing(false)} // Function to close it
                 />
             )}
 

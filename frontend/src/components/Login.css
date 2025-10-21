@@ -1,0 +1,36 @@
+.login-container {
+  padding: 10px 20px;
+  background-color: #111;
+  border: 2px solid #FFFF00;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.login-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+.login-info p {
+  margin: 0;
+  color: #FFF;
+}
+.login-info p strong {
+  color: #FFFF00;
+}
+.auth-button {
+  padding: 10px 15px;
+  border: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+.auth-button.login {
+  background-color: #00FF00;
+  color: #000;
+}
+.auth-button.logout {
+  background-color: #FF0000;
+  color: #000;
+}

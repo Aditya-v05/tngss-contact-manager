@@ -119,3 +119,16 @@
 .delete-button:hover {
   background-color: #FF8888;
 }
+/* ... all existing styles ... */
+.view-modal-footer .email-button {
+  padding: 10px 15px;
+  border: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+  background-color: #00FF00; /* Green */
+  color: #000;
+  margin-right: auto; /* --- This pushes it to the FAR LEFT --- */
+}
+.view-modal-footer .email-button:hover {
+  background-color: #FFFFFF;
+}

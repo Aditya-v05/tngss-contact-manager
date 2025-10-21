@@ -1,19 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { db } from '../firebase.js'; // Keep for delete/update
-import { doc, deleteDoc, updateDoc } from 'firebase/firestore'; 
+import { db } from '../firebase.js'; 
+// --- RE-ADD getDocs, collection, query, orderBy ---
+import { collection, getDocs, query, orderBy, doc, deleteDoc, updateDoc } from 'firebase/firestore'; 
 import EditModal from './EditModal';
 import ViewModal from './ViewModal';
 import './contactList.css'; 
 
-// Receive contacts, loading, and onRefresh as props
-const ContactList = ({ contacts, loading, onRefresh }) => {
-    // This component's state is now just for filtering and modals
+// --- REVERTED: Receive refreshKey as a prop ---
+const ContactList = ({ refreshKey }) => {
+    // --- RE-ADD STATE: State is now managed inside this component ---
+    const [contacts, setContacts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [filterIndustry, setFilterIndustry] = useState('');
     const [editingContact, setEditingContact] = useState(null);
     const [viewingContact, setViewingContact] = useState(null);
 
-    // All fetchContacts and useEffect logic has been removed (lifted to App.js)
+    // --- RE-ADD: fetchContacts function ---
+    const fetchContacts = async () => {
+        setLoading(true);
+        try {
+            const contactsQuery = query(
+                collection(db, 'contacts'),
+                orderBy('timestamp', 'desc') 
+            );
+            const querySnapshot = await getDocs(contactsQuery);
+            const fetchedContacts = querySnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+            setContacts(fetchedContacts);
+        } catch (error) {
+            console.error("Error fetching documents: ", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // --- RE-ADD: useEffect to fetch data on load and refreshKey change ---
+    useEffect(() => {
+        fetchContacts();
+    }, [refreshKey]); // This component now fetches its own data
 
     const uniqueIndustries = [...new Set(contacts.map(c => c.industry).filter(Boolean).sort())];
 
@@ -35,7 +63,7 @@ const ContactList = ({ contacts, loading, onRefresh }) => {
         if (window.confirm(`Are you sure you want to delete ${contactName}?`)) {
             try {
                 await deleteDoc(doc(db, 'contacts', contactId));
-                onRefresh(); // Call onRefresh prop to refetch in App.js
+                fetchContacts(); // --- REVERTED: Call fetchContacts directly
                 alert('Contact deleted successfully!');
             } catch (error) {
                 console.error("Error deleting document: ", error);
@@ -48,7 +76,7 @@ const ContactList = ({ contacts, loading, onRefresh }) => {
         const { id, ...dataToUpdate } = updatedContact; 
         try {
             await updateDoc(doc(db, 'contacts', id), dataToUpdate);
-            onRefresh(); // Call onRefresh prop to refetch in App.js
+            fetchContacts(); // --- REVERTED: Call fetchContacts directly
             setEditingContact(null);
             alert('Contact updated successfully!');
         } catch (error) {
@@ -91,7 +119,6 @@ const ContactList = ({ contacts, loading, onRefresh }) => {
                     type="text" 
                     placeholder="Search by Name, Company, or Notes..." 
                     value={searchTerm} 
-                    // --- THIS IS THE FIXED LINE ---
                     onChange={(e) => setSearchTerm(e.target.value)} 
                     className="search-input"
                 />

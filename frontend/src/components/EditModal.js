@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './contactForm.css'; // We can reuse the same form styles!
+import './ContactForm.css'; // We can reuse the same form styles!
 import './EditModal.css';   // We'll add new styles for the modal overlay
 
 const EditModal = ({ contact, onSave, onClose }) => {

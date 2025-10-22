@@ -22,6 +22,7 @@
 
 .form-input.full-width,
 .form-textarea.full-width {
+  margin-top: 10px;
   width: calc(100% - 24px); /* 100% - padding - border */
   margin-bottom: 10px;
 }

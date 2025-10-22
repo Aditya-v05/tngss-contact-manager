@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import ContactForm from './components/ContactForm_temp.js';
-import ContactList from './components/ContactList_temp.js';
+import ContactForm from './components/ContactForm';
+import ContactList from './components/ContactList';
 import ExportButton from './components/ExportButton';
-import Login from './components/Login'; // Import Login
+import Login from './components/Login';
 import './firebase.js'; 
 import './App.css'; 
 
 function App() {
   const [refreshKey, setRefreshKey] = useState(0);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null); 
 
   const handleContactAdded = () => {
     setRefreshKey(prevKey => prevKey + 1);
@@ -16,11 +16,20 @@ function App() {
 
   return (
     <div className="app-container">
-      {/* ... (Header) ... */}
       
+      {/* --- MOVED THIS BLOCK BACK TO THE TOP --- */}
+      <div className="app-header-container">
+        <h1 className="app-header">
+          TNGSS Contact Manager
+        </h1>
+        {/* Pass the userId to the export button */}
+        <ExportButton userId={currentUser?.uid} /> 
+      </div>
+      
+      {/* This shows your login status */}
       <Login onUserChange={setCurrentUser} /> 
 
-      {/* --- PASS THE USER ID DOWN --- */}
+      {/* Pass the user ID to the form */}
       <ContactForm 
         onContactAdded={handleContactAdded} 
         userId={currentUser?.uid} 
@@ -28,17 +37,15 @@ function App() {
       
       <hr className="app-divider" />
       
+      {/* Pass the user ID and email to the list */}
       <ContactList 
         refreshKey={refreshKey} 
         userEmail={currentUser?.email}
         userId={currentUser?.uid} 
       />
       
-       {/* --- Pass it to ExportButton too --- */}
-      <div className="app-header-container">
-        <h1 className="app-header">TNGSS Contact Manager</h1>
-        <ExportButton userId={currentUser?.uid} /> 
-      </div>
+      {/* --- The header block is no longer down here --- */}
+      
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { db } from '../firebase.js'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import './ContactForm.css'; // Import the form CSS
-import CardScanner from './CardScanner'; // --- NEW: Import the scanner ---
+import './ContactForm.css'; 
+import CardScanner from './CardScanner';
 
 const ContactForm = ({ onContactAdded }) => {
     const initialState = {
@@ -10,8 +10,6 @@ const ContactForm = ({ onContactAdded }) => {
         mobile: '', tngss_year: new Date().getFullYear(), notes: '', follow_up: false,
     };
     const [formData, setFormData] = useState(initialState);
-    
-    // --- NEW: State for the "switch" ---
     const [scanMode, setScanMode] = useState(false);
 
     const handleChange = (e) => {
@@ -38,7 +36,7 @@ const ContactForm = ({ onContactAdded }) => {
 
             alert(`Contact for ${formData.name} saved successfully!`);
             setFormData(initialState); 
-            setScanMode(false); // Reset the scanner toggle
+            setScanMode(false);
             if (onContactAdded) onContactAdded(); 
 
         } catch (error) {
@@ -47,13 +45,19 @@ const ContactForm = ({ onContactAdded }) => {
         }
     };
 
-    // --- NEW: Function to handle the scanned text ---
-    const handleScanComplete = (text) => {
-        console.log("Scanned text:", text);
+    // --- THIS IS THE NEW, SMARTER PARSING FUNCTION ---
+    const handleScanComplete = (rawText) => {
+        console.log("Scanned text:", rawText);
+        let text = rawText;
 
-        // Basic parsing with Regex (imperfect, but a good start)
-        const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/;
-        const phoneRegex = /(\+?[0-9][0-9\s-]{7,}[0-9])/; // Simple phone regex
+        // --- 1. Email Guessing ---
+        // Try to fix common OCR mistakes for "@" (like 'e' or 'o')
+        // This line looks for "word-e-word.com" and changes it to "word@word.com"
+        text = text.replace(/([a-zA-Z0-9._-]+)(?: e | o |\(at\)|\[at\]| |e|o)([a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/gi, '$1@$2');
+        
+        // Now run the strict regex on the *corrected* text
+        const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i;
+        const phoneRegex = /(\+?[0-9][0-9\s-]{7,}[0-9])/; 
 
         const emailMatch = text.match(emailRegex);
         const phoneMatch = text.match(phoneRegex);
@@ -61,24 +65,62 @@ const ContactForm = ({ onContactAdded }) => {
         const foundEmail = emailMatch ? emailMatch[0] : '';
         const foundPhone = phoneMatch ? phoneMatch[0].replace(/\s/g, '') : '';
         
-        // Pre-fill the form! This is your "edit and review" step.
+        // --- 2. Name, Company, & Industry Guessing ---
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
+        
+        let foundName = '';
+        let foundCompany = '';
+        let foundIndustry = '';
+
+        // Guess: The first valid line is the Name
+        if (lines.length > 0) {
+            foundName = lines[0];
+        }
+
+        // Guess: The second line is either a Title (Industry) or Company
+        if (lines.length > 1) {
+            const secondLine = lines[1];
+            const lowerSecondLine = secondLine.toLowerCase();
+            
+            // Keywords that suggest a job title
+            const titleKeywords = [
+                'designer', 'engineer', 'manager', 'ceo', 'founder', 
+                'developer', 'specialist', 'officer', 'consultant', 'architect'
+            ];
+
+            // Check if the second line sounds like a job title
+            const isTitle = titleKeywords.some(keyword => lowerSecondLine.includes(keyword));
+            
+            if (isTitle) {
+                // It's a title, let's use it for "Industry"
+                foundIndustry = secondLine;
+            } else {
+                // Not a title? Let's guess it's the Company.
+                foundCompany = secondLine;
+            }
+        }
+        
+        // --- 3. Pre-fill the form ---
         setFormData(prev => ({
             ...prev,
+            name: foundName,       // Add the found name
+            company: foundCompany, // Add the found company
+            industry: foundIndustry, // Add the found industry
             email: foundEmail,
             mobile: foundPhone,
-            notes: text, // Put all raw text in notes for review
+            notes: rawText, // Put ALL raw, original text in notes for review
         }));
         
         // Flip back to the form
         setScanMode(false);
     };
+    // --- END OF UPDATED FUNCTION ---
 
     return (
         <form onSubmit={handleSubmit} className="contact-form">
             
             <div className="form-header-toggle">
                 <h3 className="form-title">Add New Contact</h3>
-                {/* --- NEW: The "Switch" --- */}
                 <label className="scanner-toggle-label">
                     Scan Card
                     <input 
@@ -91,12 +133,10 @@ const ContactForm = ({ onContactAdded }) => {
                 </label>
             </div>
             
-            {/* --- NEW: Conditional Rendering --- */}
             {scanMode ? (
                 <CardScanner onScanComplete={handleScanComplete} />
             ) : (
                 <> 
-                    {/* This is your existing form, now wrapped in a fragment */}
                     <div className="form-grid">
                         <input name="name" value={formData.name} onChange={handleChange} placeholder="Contact Name" required className="form-input"/>
                         <input name="company" value={formData.company} onChange={handleChange} placeholder="Company" required className="form-input"/>

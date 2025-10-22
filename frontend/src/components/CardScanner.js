@@ -1,5 +1,3 @@
-// frontend/src/components/CardScanner.js
-
 import React, { useState } from 'react';
 import { createWorker } from 'tesseract.js';
 import './CardScanner.css';
@@ -15,26 +13,25 @@ const CardScanner = ({ onScanComplete }) => {
     setOcrStatus('Initializing worker...');
     setOcrProgress(0);
 
-    // 1. Create the worker (without the logger)
+    // 1. Create the worker (simple, no logger)
     const worker = await createWorker();
 
-    // 2. Subscribe to the worker's messages
-    const unsubscribe = worker.subscribe(m => {
-      if (m.status === 'recognizing text') {
-        setOcrStatus('Recognizing text...');
-        // m.progress is a value from 0 to 1
-        setOcrProgress(m.progress);
-      } else {
-        // You can also log other statuses
-        setOcrStatus(m.status);
-      }
-    });
-
     try {
-      // 3. Load language and run recognition
+      // 2. Load language and initialize
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
-      const { data: { text } } = await worker.recognize(file);
+      
+      // 3. Run recognition and pass the progress callback HERE
+      const { data: { text } } = await worker.recognize(file, {
+        progress: (m) => {
+          if (m.status === 'recognGizing text') {
+            setOcrStatus('Recognizing text...');
+            setOcrProgress(m.progress);
+          } else {
+            setOcrStatus(m.status);
+          }
+        }
+      });
       
       setOcrStatus('Scan complete!');
       setOcrProgress(1);
@@ -48,7 +45,6 @@ const CardScanner = ({ onScanComplete }) => {
     } finally {
       // 5. Clean up
       await worker.terminate();
-      unsubscribe(); // Stop listening to messages
     }
   };
 

@@ -13,37 +13,35 @@ const CardScanner = ({ onScanComplete }) => {
     setOcrStatus('Initializing worker...');
     setOcrProgress(0);
 
-    // 1. Create the worker (simple, no logger)
-    const worker = await createWorker();
+    // 1. Create the worker and load the language in ONE step
+    const worker = await createWorker('eng', 1, {
+      logger: (m) => {
+        // The logger is the correct way to get progress
+        if (m.status === 'recognizing text') {
+          setOcrStatus('Recognizing text...');
+          setOcrProgress(m.progress);
+        } else {
+          setOcrStatus(m.status);
+        }
+      },
+    });
 
     try {
-      // 2. Load language and initialize
-      await worker.loadLanguage('eng');
-      await worker.initialize('eng');
-      
-      // 3. Run recognition and pass the progress callback HERE
-      const { data: { text } } = await worker.recognize(file, {
-        progress: (m) => {
-          if (m.status === 'recognGizing text') {
-            setOcrStatus('Recognizing text...');
-            setOcrProgress(m.progress);
-          } else {
-            setOcrStatus(m.status);
-          }
-        }
-      });
+      // 2. We can now recognize immediately.
+      // We don't need loadLanguage or initialize.
+      const { data: { text } } = await worker.recognize(file);
       
       setOcrStatus('Scan complete!');
       setOcrProgress(1);
       
-      // 4. Pass the raw text up to the ContactForm
+      // 3. Pass the raw text up to the ContactForm
       onScanComplete(text);
 
     } catch (error) {
       console.error("OCR Error:", error);
       setOcrStatus('Scan failed. Please try again.');
     } finally {
-      // 5. Clean up
+      // 4. Clean up
       await worker.terminate();
     }
   };

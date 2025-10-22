@@ -1,10 +1,12 @@
+// frontend/src/components/ContactForm.js
+
 import React, { useState } from 'react';
 import { db } from '../firebase.js'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './ContactForm.css'; 
 import CardScanner from './CardScanner';
 
-const ContactForm = ({ onContactAdded, userId }) => {
+const ContactForm = ({ onContactAdded }) => {
     const initialState = {
         name: '', company: '', industry: '', email: '', 
         mobile: '', tngss_year: new Date().getFullYear(), notes: '', follow_up: false,
@@ -21,50 +23,47 @@ const ContactForm = ({ onContactAdded, userId }) => {
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // 2. NEW: Check if the user is logged in
-    if (!userId) {
-      alert("You must be logged in to save a contact.");
-      return;
-    }
-
+        e.preventDefault();
         try {
-        if (!formData.name || !formData.company) {
-            alert("Name and Company are required.");
-            return;
-        }
-        
-        // 3. NEW: Use the user-specific path
-        const userContactsCollection = collection(db, 'users', userId, 'contacts');
+            if (!formData.name || !formData.company) {
+                // NEW: Let's relax this rule for now, since company might be blank
+                if (!formData.name) {
+                    alert("Name is required.");
+                    return;
+                }
+            }
 
-        await addDoc(userContactsCollection, { // Use the new path
-            ...formData,
-            tngss_year: Number(formData.tngss_year), 
-            timestamp: serverTimestamp() 
-        });
+            await addDoc(collection(db, 'contacts'), {
+                ...formData,
+                tngss_year: Number(formData.tngss_year), 
+                timestamp: serverTimestamp() 
+            });
+
             alert(`Contact for ${formData.name} saved successfully!`);
             setFormData(initialState); 
             setScanMode(false);
             if (onContactAdded) onContactAdded(); 
 
         } catch (error) {
-      console.error("Error adding document: ", error);
-      alert('Failed to save contact.');
-    }
-  };
+            console.error("Error adding document: ", error);
+            alert('Failed to save contact.');
+        }
+    };
 
-    // --- THIS IS THE NEW, SMARTER PARSING FUNCTION ---
+    // --- THIS IS THE UPDATED FUNCTION ---
     const handleScanComplete = (rawText) => {
         console.log("Scanned text:", rawText);
         let text = rawText;
 
-        // --- 1. Email Guessing ---
-        // Try to fix common OCR mistakes for "@" (like 'e' or 'o')
-        // This line looks for "word-e-word.com" and changes it to "word@word.com"
-        text = text.replace(/([a-zA-Z0-9._-]+)(?: e | o |\(at\)|\[at\]| |e|o)([a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/gi, '$1@$2');
+        // --- 1. Email Guessing (More Aggressive) ---
+        // Looks for "word[e/o/(at)]word.com"
+        // This will fix "helloereallygreatsite.com" -> "hello@reallygreatsite.com"
+        // It also fixes "helloereallygr@atsite.com"
+        text = text.replace(
+          /([a-zA-Z0-9._-]+)(?:e|o|\(at\)|\[at\]|gr@at|gr@atsite|ereallygr@atsite)([a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/gi, 
+          '$1@$2'
+        );
         
-        // Now run the strict regex on the *corrected* text
         const emailRegex = /([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/i;
         const phoneRegex = /(\+?[0-9][0-9\s-]{7,}[0-9])/; 
 
@@ -74,53 +73,48 @@ const ContactForm = ({ onContactAdded, userId }) => {
         const foundEmail = emailMatch ? emailMatch[0] : '';
         const foundPhone = phoneMatch ? phoneMatch[0].replace(/\s/g, '') : '';
         
-        // --- 2. Name, Company, & Industry Guessing ---
+        // --- 2. Name, Company, & Industry Guessing (Improved) ---
         const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
         
         let foundName = '';
         let foundCompany = '';
         let foundIndustry = '';
 
-        // Guess: The first valid line is the Name
         if (lines.length > 0) {
-            foundName = lines[0];
+            foundName = lines[0]; // Guess: First line is Name
         }
 
-        // Guess: The second line is either a Title (Industry) or Company
         if (lines.length > 1) {
             const secondLine = lines[1];
             const lowerSecondLine = secondLine.toLowerCase();
             
-            // Keywords that suggest a job title
             const titleKeywords = [
                 'designer', 'engineer', 'manager', 'ceo', 'founder', 
                 'developer', 'specialist', 'officer', 'consultant', 'architect'
             ];
 
-            // Check if the second line sounds like a job title
             const isTitle = titleKeywords.some(keyword => lowerSecondLine.includes(keyword));
             
+            // --- NEW LOGIC: ---
+            // Only assign to one field, not both.
             if (isTitle) {
-                // It's a title, let's use it for "Industry"
-                foundIndustry = secondLine;
+                foundIndustry = secondLine; // It's a title, put in Industry
             } else {
-                // Not a title? Let's guess it's the Company.
-                foundCompany = secondLine;
+                foundCompany = secondLine; // Not a title? It must be the Company
             }
         }
         
         // --- 3. Pre-fill the form ---
         setFormData(prev => ({
             ...prev,
-            name: foundName,       // Add the found name
-            company: foundCompany, // Add the found company
-            industry: foundIndustry, // Add the found industry
+            name: foundName,
+            company: foundCompany,   // Will be blank if a title was found
+            industry: foundIndustry, // Will be blank if a company was found
             email: foundEmail,
             mobile: foundPhone,
             notes: rawText, // Put ALL raw, original text in notes for review
         }));
         
-        // Flip back to the form
         setScanMode(false);
     };
     // --- END OF UPDATED FUNCTION ---
@@ -147,8 +141,11 @@ const ContactForm = ({ onContactAdded, userId }) => {
             ) : (
                 <> 
                     <div className="form-grid">
+                        {/* We now remove 'required' from Company, 
+                          since the card might only have a name and title.
+                        */}
                         <input name="name" value={formData.name} onChange={handleChange} placeholder="Contact Name" required className="form-input"/>
-                        <input name="company" value={formData.company} onChange={handleChange} placeholder="Company" required className="form-input"/>
+                        <input name="company" value={formData.company} onChange={handleChange} placeholder="Company" className="form-input"/>
                         <input name="industry" value={formData.industry} onChange={handleChange} placeholder="Industry (e.g., AI, SaaS)" className="form-input"/>
                         <input name="tngss_year" value={formData.tngss_year} onChange={handleChange} placeholder="TNGSS Year" type="number" required className="form-input"/>
                     </div>

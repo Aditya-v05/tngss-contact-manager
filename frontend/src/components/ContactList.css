@@ -88,6 +88,7 @@
 }
 .card-detail strong {
   color: #AAA;
+  overflow-wrap: break-word;
 }
 
 .card-contact {
@@ -113,6 +114,7 @@
   padding-left: 8px;
   font-size: 0.9em;
   color: #DDD;
+  overflow-wrap: break-word;
 }
 
 .follow-up-tag {

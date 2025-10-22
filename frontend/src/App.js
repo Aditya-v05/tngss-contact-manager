@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import ContactForm from './components/ContactForm';
-import ContactList from './components/ContactList';
+import ContactForm from './components/ContactForm_temp.js';
+import ContactList from './components/ContactList_temp.js';
 import ExportButton from './components/ExportButton';
-import Login from './components/Login';
+import Login from './components/Login'; // Import Login
 import './firebase.js'; 
 import './App.css'; 
 
@@ -19,20 +19,19 @@ function App() {
       
       <div className="app-header-container">
         <h1 className="app-header">
-          TNGSS Contact Manager
+          Adi's Contact Manager
         </h1>
         <ExportButton /> 
       </div>
       
-      {/* --- This shows your login status --- */}
+      {/* Add the Login component */}
       <Login onUserChange={setCurrentUser} /> 
 
-      {/* --- You should only have ONE of these --- */}
       <ContactForm onContactAdded={handleContactAdded} />
       
       <hr className="app-divider" />
       
-      {/* --- This shows your contact list --- */}
+      {/* We can now pass the user's email to the list */}
       <ContactList refreshKey={refreshKey} userEmail={currentUser?.email} />
     </div>
   );

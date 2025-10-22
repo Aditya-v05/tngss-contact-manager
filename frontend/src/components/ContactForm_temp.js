@@ -4,7 +4,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import './ContactForm.css'; 
 import CardScanner from './CardScanner';
 
-const ContactForm = ({ onContactAdded }) => {
+const ContactForm = ({ onContactAdded, userId }) => {
     const initialState = {
         name: '', company: '', industry: '', email: '', 
         mobile: '', tngss_year: new Date().getFullYear(), notes: '', follow_up: false,
@@ -21,29 +21,38 @@ const ContactForm = ({ onContactAdded }) => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+    e.preventDefault();
+    
+    // 2. NEW: Check if the user is logged in
+    if (!userId) {
+      alert("You must be logged in to save a contact.");
+      return;
+    }
+
         try {
-            if (!formData.name || !formData.company) {
-                alert("Name and Company are required.");
-                return;
-            }
+        if (!formData.name || !formData.company) {
+            alert("Name and Company are required.");
+            return;
+        }
+        
+        // 3. NEW: Use the user-specific path
+        const userContactsCollection = collection(db, 'users', userId, 'contacts');
 
-            await addDoc(collection(db, 'contacts'), {
-                ...formData,
-                tngss_year: Number(formData.tngss_year), 
-                timestamp: serverTimestamp() 
-            });
-
+        await addDoc(userContactsCollection, { // Use the new path
+            ...formData,
+            tngss_year: Number(formData.tngss_year), 
+            timestamp: serverTimestamp() 
+        });
             alert(`Contact for ${formData.name} saved successfully!`);
             setFormData(initialState); 
             setScanMode(false);
             if (onContactAdded) onContactAdded(); 
 
         } catch (error) {
-            console.error("Error adding document: ", error);
-            alert('Failed to save contact.');
-        }
-    };
+      console.error("Error adding document: ", error);
+      alert('Failed to save contact.');
+    }
+  };
 
     // --- THIS IS THE NEW, SMARTER PARSING FUNCTION ---
     const handleScanComplete = (rawText) => {

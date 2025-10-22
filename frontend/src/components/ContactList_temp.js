@@ -9,7 +9,7 @@ import EmailModal from './EmailModal.js'; // Import the new EmailModal
 import './ContactList.css'; 
 
 // Receive userEmail as a prop
-const ContactList = ({ refreshKey, userEmail }) => {
+const ContactList = ({ refreshKey, userEmail, userId }) => {
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -21,29 +21,39 @@ const ContactList = ({ refreshKey, userEmail }) => {
     const [isEmailing, setIsEmailing] = useState(false);
 
     const fetchContacts = async () => {
-        setLoading(true);
-        try {
-            const contactsQuery = query(
-                collection(db, 'contacts'),
-                orderBy('timestamp', 'desc') 
-            );
-            const querySnapshot = await getDocs(contactsQuery);
+    // 2. NEW: If no user, don't fetch anything.
+    if (!userId) {
+      setContacts([]); // Clear contacts
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      // 3. NEW: Use the user-specific path
+      const userContactsCollection = collection(db, 'users', userId, 'contacts');
+      const contactsQuery = query(
+          userContactsCollection, // Use the new path
+          orderBy('timestamp', 'desc') 
+      );
+      
+      const querySnapshot = await getDocs(contactsQuery);
             const fetchedContacts = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data()
             }));
             setContacts(fetchedContacts);
         } catch (error) {
-            console.error("Error fetching documents: ", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      console.error("Error fetching documents: ", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
     // Fetch data on load and whenever a new contact is added (via refreshKey)
     useEffect(() => {
-        fetchContacts();
-    }, [refreshKey]); 
+    fetchContacts();
+  }, [refreshKey, userId]);
 
     const uniqueIndustries = [...new Set(contacts.map(c => c.industry).filter(Boolean).sort())];
 
@@ -62,9 +72,10 @@ const ContactList = ({ refreshKey, userEmail }) => {
     const shouldShowContacts = searchTerm.length > 0 || filterIndustry.length > 0;
 
     const handleDelete = async (contactId, contactName) => {
+        if (!userId) return;
         if (window.confirm(`Are you sure you want to delete ${contactName}?`)) {
             try {
-                await deleteDoc(doc(db, 'contacts', contactId));
+                await deleteDoc(doc(db, 'users', userId, 'contacts', contactId)); 
                 fetchContacts(); // Refetch after delete
                 alert('Contact deleted successfully!');
             } catch (error) {
@@ -75,9 +86,10 @@ const ContactList = ({ refreshKey, userEmail }) => {
     };
 
     const handleSaveEdit = async (updatedContact) => {
-        const { id, ...dataToUpdate } = updatedContact; 
-        try {
-            await updateDoc(doc(db, 'contacts', id), dataToUpdate);
+    if (!userId) return; // Safety check
+    const { id, ...dataToUpdate } = updatedContact; 
+    try {
+            await updateDoc(doc(db, 'users', userId, 'contacts', id), dataToUpdate);
             fetchContacts(); // Refetch after update
             setEditingContact(null);
             alert('Contact updated successfully!');
@@ -87,6 +99,9 @@ const ContactList = ({ refreshKey, userEmail }) => {
         }
     };
 
+    if (!userId) {
+    return <p className="prompt-text">Please sign in to view your contacts.</p>;
+    }
     if (loading) return <p className="loading-text">Loading TNGSS contacts...</p>;
 
     return (

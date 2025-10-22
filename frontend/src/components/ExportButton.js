@@ -4,22 +4,28 @@ import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import * as XLSX from 'xlsx';
 import './ExportButton.css'; // We'll create this CSS file
 
-const ExportButton = () => {
-    const [loading, setLoading] = useState(false);
+const ExportButton = ({ userId }) => {
+  const [loading, setLoading] = useState(false);
 
-    const handleExportAll = async () => {
-        if (loading) return; // Prevent double-clicks
-        
-        setLoading(true);
-        try {
-            // 1. Fetch ALL contacts from Firestore
-            console.log("Fetching all contacts for export...");
-            const contactsQuery = query(
-                collection(db, 'contacts'),
-                orderBy('name', 'asc') // Exporting in alphabetical order is nice
-            );
+  const handleExportAll = async () => {
+    // 2. NEW: Check if user is logged in
+    if (!userId) {
+      alert("You must be logged in to export contacts.");
+      return;
+    }
+    
+    if (loading) return;
+    setLoading(true);
+    
+    try {
+      // 3. NEW: Use the user-specific path
+      const userContactsCollection = collection(db, 'users', userId, 'contacts');
+      const contactsQuery = query(
+          userContactsCollection, // Use the new path
+          orderBy('name', 'asc') 
+      );
 
-            const querySnapshot = await getDocs(contactsQuery);
+      const querySnapshot = await getDocs(contactsQuery);
             const allContacts = querySnapshot.docs.map(doc => doc.data());
             
             if (allContacts.length === 0) {
@@ -56,14 +62,14 @@ const ExportButton = () => {
     };
 
     return (
-        <button 
-            onClick={handleExportAll} 
-            className="export-all-button" 
-            disabled={loading}
-        >
-            {loading ? 'Exporting...' : 'Export All Data'}
-        </button>
-    );
+    <button 
+      onClick={handleExportAll} 
+      className="export-all-button" 
+      disabled={loading || !userId} // Disable if no user
+    >
+      {loading ? 'Exporting...' : 'Export All Data'}
+    </button>
+  );
 };
 
 export default ExportButton;

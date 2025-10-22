@@ -1,6 +1,23 @@
 # 💾 TNGSS Contact Manager v1.0 💾
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/) [![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/) [![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/) [![Tesseract.js](https://img.shields.io/badge/Tesseract.js-FF0000?style=for-the-badge&logo=javascript&logoColor=white)](https://tesseract.projectnaptha.com/)
+  ________
+               .' /  /   )
+              /  /##/   /|
+             /  `--'   / |
+            /__ __ __ /  |
+           //_//_//_//  / 
+          //_//_//_//  / 
+         //_//_//_//  /
+        //_//_//_//  /
+       /         /  / 
+      /   .-.   /  /
+     /   /#/   /  /
+    /   `-'   /  /
+   / .====.  /  / 
+  |`--------'  /
+   \   ,     .'
+    `-//----'  
 
 ---
 

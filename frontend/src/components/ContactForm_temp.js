@@ -3,16 +3,23 @@
 import React, { useState } from 'react';
 import { db } from '../firebase.js'; 
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+// You imported React twice, removing the duplicate below
+// import React, { useState } from 'react'; // <--- REMOVE THIS DUPLICATE IMPORT
 import './ContactForm.css'; 
 import CardScanner from './CardScanner';
 
-const ContactForm = ({ onContactAdded }) => {
+// Make sure you accept userId as a prop if you've implemented multi-user support
+const ContactForm = ({ onContactAdded, userId }) => { 
     const initialState = {
         name: '', company: '', industry: '', email: '', 
-        mobile: '', tngss_year: new Date().getFullYear(), notes: '', follow_up: false,
+        mobile: '', tngss_year: new Date().getFullYear(), notes: '', follow_up: false, 
+        // We added tags array initialization here
+        tags: [], 
     };
     const [formData, setFormData] = useState(initialState);
     const [scanMode, setScanMode] = useState(false);
+    // Added state for the tag input string
+    const [tagsInput, setTagsInput] = useState(''); 
 
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -22,25 +29,45 @@ const ContactForm = ({ onContactAdded }) => {
         }));
     };
 
+    // Added handler for the tag input
+    const handleTagsChange = (e) => {
+        setTagsInput(e.target.value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
-        try {
-            if (!formData.name || !formData.company) {
-                // NEW: Let's relax this rule for now, since company might be blank
-                if (!formData.name) {
-                    alert("Name is required.");
-                    return;
-                }
-            }
+        
+        // Added check for userId if implementing multi-user
+        if (!userId) {
+          alert("You must be logged in to save a contact.");
+          return;
+        }
 
-            await addDoc(collection(db, 'contacts'), {
+        try {
+            // Relaxed the company requirement
+            if (!formData.name) { 
+                alert("Name is required.");
+                return;
+            }
+            
+            // Added logic to convert tags string to array
+            const tagsArray = tagsInput.split(',') 
+                               .map(tag => tag.trim()) 
+                               .filter(tag => tag.length > 0); 
+
+            // Updated path for multi-user support
+            const userContactsCollection = collection(db, 'users', userId, 'contacts');
+
+            await addDoc(userContactsCollection, { // Use user-specific path
                 ...formData,
                 tngss_year: Number(formData.tngss_year), 
+                tags: tagsArray, // Save the tags array
                 timestamp: serverTimestamp() 
             });
 
             alert(`Contact for ${formData.name} saved successfully!`);
             setFormData(initialState); 
+            setTagsInput(''); // Clear tag input
             setScanMode(false);
             if (onContactAdded) onContactAdded(); 
 
@@ -50,17 +77,14 @@ const ContactForm = ({ onContactAdded }) => {
         }
     };
 
-    // --- THIS IS THE UPDATED FUNCTION ---
+    // --- THIS IS THE UPDATED PARSING FUNCTION ---
     const handleScanComplete = (rawText) => {
         console.log("Scanned text:", rawText);
         let text = rawText;
 
         // --- 1. Email Guessing (More Aggressive) ---
-        // Looks for "word[e/o/(at)]word.com"
-        // This will fix "helloereallygreatsite.com" -> "hello@reallygreatsite.com"
-        // It also fixes "helloereallygr@atsite.com"
         text = text.replace(
-          /([a-zA-Z0-9._-]+)(?:e|o|\(at\)|\[at\]|gr@at|gr@atsite|ereallygr@atsite)([a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/gi, 
+          /([a-zA-Z0-9._-]+)(?:e|o|\(at\)|\[at\]|gr@at|gr@atsite|ereallygr@atsite| | e | o )([a-zA-Z0-9._-]+\.[a-zA-Z]{2,})/gi, // Added spaces around e/o
           '$1@$2'
         );
         
@@ -95,8 +119,6 @@ const ContactForm = ({ onContactAdded }) => {
 
             const isTitle = titleKeywords.some(keyword => lowerSecondLine.includes(keyword));
             
-            // --- NEW LOGIC: ---
-            // Only assign to one field, not both.
             if (isTitle) {
                 foundIndustry = secondLine; // It's a title, put in Industry
             } else {
@@ -108,12 +130,14 @@ const ContactForm = ({ onContactAdded }) => {
         setFormData(prev => ({
             ...prev,
             name: foundName,
-            company: foundCompany,   // Will be blank if a title was found
-            industry: foundIndustry, // Will be blank if a company was found
+            company: foundCompany,   
+            industry: foundIndustry, 
             email: foundEmail,
             mobile: foundPhone,
-            notes: rawText, // Put ALL raw, original text in notes for review
+            notes: rawText, 
+            tags: [], // Reset tags on scan
         }));
+        setTagsInput(''); // Reset tags input field
         
         setScanMode(false);
     };
@@ -141,10 +165,8 @@ const ContactForm = ({ onContactAdded }) => {
             ) : (
                 <> 
                     <div className="form-grid">
-                        {/* We now remove 'required' from Company, 
-                          since the card might only have a name and title.
-                        */}
                         <input name="name" value={formData.name} onChange={handleChange} placeholder="Contact Name" required className="form-input"/>
+                        {/* Removed 'required' from Company */}
                         <input name="company" value={formData.company} onChange={handleChange} placeholder="Company" className="form-input"/>
                         <input name="industry" value={formData.industry} onChange={handleChange} placeholder="Industry (e.g., AI, SaaS)" className="form-input"/>
                         <input name="tngss_year" value={formData.tngss_year} onChange={handleChange} placeholder="TNGSS Year" type="number" required className="form-input"/>
@@ -152,6 +174,15 @@ const ContactForm = ({ onContactAdded }) => {
 
                     <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" type="email" className="form-input full-width" /><br/>
                     <input name="mobile" value={formData.mobile} onChange={handleChange} placeholder="Mobile" className="form-input full-width" /><br/>
+                    
+                    {/* Added Tag Input */}
+                    <input
+                        name="tags"
+                        value={tagsInput}
+                        onChange={handleTagsChange}
+                        placeholder="Tags (comma-separated, e.g., investor, AI)"
+                        className="form-input full-width"
+                    /><br/>
 
                     <textarea 
                         name="notes" 

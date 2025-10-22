@@ -142,3 +142,22 @@
   grid-column: 1 / -1; /* Make it span the whole grid */
   padding: 40px;
 }
+
+/* ... all existing styles ... */
+
+/* --- NEW: Styles for Tags on Card --- */
+.card-tags {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.tag-item {
+  background-color: #444;
+  color: #00FF00; /* Bright Green */
+  padding: 2px 6px;
+  font-size: 0.7em;
+  border: 1px solid #666;
+  white-space: nowrap;
+}

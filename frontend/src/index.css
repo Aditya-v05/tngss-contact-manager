@@ -35,3 +35,16 @@ input::placeholder, textarea::placeholder {
 button {
   cursor: pointer;
 }
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  /* This is a hack: It uses a huge inner shadow to "paint" over
+     the browser's color with your theme's dark background */
+  -webkit-box-shadow: 0 0 0 30px #111 inset !important;
+  box-shadow: 0 0 0 30px #111 inset !important;
+
+  /* Optional: Force the text color to be white */
+  -webkit-text-fill-color: #FFFFFF !important;
+}

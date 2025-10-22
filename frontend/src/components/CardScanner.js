@@ -1,28 +1,37 @@
+// frontend/src/components/CardScanner.js
+
 import React, { useState } from 'react';
 import { createWorker } from 'tesseract.js';
-import './CardScanner.css'; // We'll create this
+import './CardScanner.css';
 
 const CardScanner = ({ onScanComplete }) => {
   const [ocrProgress, setOcrProgress] = useState(null);
-  const [ocrStatus, setOcrStatus] = useState('Idle');
+  const [ocrStatus, setOcrStatus] = useState('Idle. Upload a card to begin.');
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setOcrStatus('Initializing...');
+    setOcrStatus('Initializing worker...');
     setOcrProgress(0);
 
-    const worker = await createWorker({
-      logger: m => {
-        if (m.status === 'recognizing text') {
-          setOcrStatus('Recognizing text...');
-          setOcrProgress(m.progress);
-        }
-      },
+    // 1. Create the worker (without the logger)
+    const worker = await createWorker();
+
+    // 2. Subscribe to the worker's messages
+    const unsubscribe = worker.subscribe(m => {
+      if (m.status === 'recognizing text') {
+        setOcrStatus('Recognizing text...');
+        // m.progress is a value from 0 to 1
+        setOcrProgress(m.progress);
+      } else {
+        // You can also log other statuses
+        setOcrStatus(m.status);
+      }
     });
 
     try {
+      // 3. Load language and run recognition
       await worker.loadLanguage('eng');
       await worker.initialize('eng');
       const { data: { text } } = await worker.recognize(file);
@@ -30,14 +39,16 @@ const CardScanner = ({ onScanComplete }) => {
       setOcrStatus('Scan complete!');
       setOcrProgress(1);
       
-      // Pass the raw text up to the ContactForm
+      // 4. Pass the raw text up to the ContactForm
       onScanComplete(text);
 
     } catch (error) {
       console.error("OCR Error:", error);
       setOcrStatus('Scan failed. Please try again.');
     } finally {
+      // 5. Clean up
       await worker.terminate();
+      unsubscribe(); // Stop listening to messages
     }
   };
 

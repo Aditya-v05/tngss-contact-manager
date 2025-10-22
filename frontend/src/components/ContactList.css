@@ -84,6 +84,7 @@
 .card-detail {
   margin: 0 0 5px 0;
   font-size: 0.8em;
+  overflow-wrap: break-word;
 }
 .card-detail strong {
   color: #AAA;

@@ -20,7 +20,7 @@ function App() {
       {/* --- MOVED THIS BLOCK BACK TO THE TOP --- */}
       <div className="app-header-container">
         <h1 className="app-header">
-          TNGSS Contact Manager
+          Adi's Contact Manager
         </h1>
         {/* Pass the userId to the export button */}
         <ExportButton userId={currentUser?.uid} /> 

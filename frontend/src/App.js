@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import ContactForm from './components/ContactForm';
-import ContactList from './components/ContactList';
+import ContactForm from './components/ContactForm_temp.js';
+import ContactList from './components/ContactList_temp.js';
 import ExportButton from './components/ExportButton';
 import Login from './components/Login';
 import './firebase.js'; 

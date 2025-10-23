@@ -132,3 +132,34 @@
 .view-modal-footer .email-button:hover {
   background-color: #FFFFFF;
 }
+/* frontend/src/components/ViewModal.css */
+/* Add these styles to the bottom */
+
+/* ... (Existing styles) ... */
+
+.view-modal-footer .text-button {
+  padding: 10px 15px;
+  border: none;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.8em;
+  background-color: #00FFFF; /* Cyan */
+  color: #000;
+  /* Keep it aligned with Email button if Email is hidden */
+  margin-right: auto; 
+}
+.view-modal-footer .text-button:hover {
+  background-color: #FFFFFF;
+}
+
+
+/* Push Text/Email buttons left */
+.view-modal-footer .text-button,
+.view-modal-footer .email-button {
+    margin-right: auto;
+}
+/* Ensure Edit/Delete/Close stay right */
+.view-modal-footer .edit-button,
+.view-modal-footer .delete-button,
+.view-modal-footer .cancel-button {
+    margin-left: 0; /* Override any potential auto margins */
+}

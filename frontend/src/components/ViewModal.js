@@ -3,12 +3,21 @@
 import React from 'react';
 import './ViewModal.css';
 
-// Add userEmail and onEmail to the props
 const ViewModal = ({ contact, onClose, onEdit, onDelete, userEmail, onEmail }) => {
     if (!contact) return null;
 
     // Check if user is logged in AND this contact has an email
     const canEmail = userEmail && contact.email;
+    // Check if contact has a mobile number
+    const canText = contact.mobile;
+
+    // Function to open the SMS app
+    const handleTextClick = () => {
+        // Simple message, you could eventually add a modal to customize this
+        const messageBody = `Hi ${contact.name}, following up from TNGSS.`;
+        // Create the sms: link
+        window.location.href = `sms:${contact.mobile}?body=${encodeURIComponent(messageBody)}`;
+    };
 
     return (
         // Modal backdrop
@@ -41,14 +50,23 @@ const ViewModal = ({ contact, onClose, onEdit, onDelete, userEmail, onEmail }) =
                 {/* Footer with action buttons */}
                 <div className="view-modal-footer">
                     
-                    {/* --- NEW: Email Button --- */}
-                    {/* Show this button ONLY if we can email them */}
+                    {/* --- Text Button --- */}
+                    {/* Show only if there's a mobile number */}
+                    {canText && (
+                        <button className="text-button" onClick={handleTextClick}>
+                            Text
+                        </button>
+                    )}
+
+                    {/* --- Email Button --- */}
+                    {/* Show only if we can email them */}
                     {canEmail && (
                         <button className="email-button" onClick={onEmail}>
                             Email
                         </button>
                     )}
 
+                    {/* --- Existing Buttons --- */}
                     <button className="edit-button" onClick={onEdit}>
                         Edit
                     </button>
